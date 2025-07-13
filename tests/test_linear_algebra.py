@@ -1,4 +1,4 @@
-from gnfs.linear_algebra import solve_matrix
+from gnfs.linalg import solve_matrix
 from gnfs.sieve import Relation
 
 

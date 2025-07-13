@@ -3,8 +3,8 @@
 from .factor import gnfs_factor
 from .polynomial import Polynomial, select_polynomial
 from .sieve import find_relations, Relation
-from .linear_algebra import solve_matrix
-from .square_root import find_factors
+from .linalg import solve_matrix
+from .sqrt import find_factors
 
 __all__ = [
     "gnfs_factor",

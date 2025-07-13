@@ -10,7 +10,7 @@ from typing import Iterable, List
 
 import numpy as np
 
-from .sieve import Relation
+from ..sieve import Relation
 
 
 def _nullspace_mod2(matrix: np.ndarray) -> List[np.ndarray]:

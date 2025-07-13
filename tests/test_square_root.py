@@ -1,7 +1,7 @@
 import sympy as sp
 from gnfs.polynomial import select_polynomial
 from gnfs.sieve import Relation, find_relations
-from gnfs.square_root import find_factors
+from gnfs.sqrt import find_factors
 
 
 def test_find_factors_even_number():

@@ -7,8 +7,8 @@ The current code base offers only a minimal demonstration. The tasks below break
 - ~~Set up continuous integration running `pytest`.~~
 
 ## 2. Restructure Modules
-- Split `gnfs` into subpackages: `polynomial`, `sieve`, `linalg`, and `sqrt`.
-- Update imports and tests to match the new layout.
+- ~~Split `gnfs` into subpackages: `polynomial`, `sieve`, `linalg`, and `sqrt`.~~
+- ~~Update imports and tests to match the new layout.~~
 
 ## 3. Improve the CLI
 - Add command line options for polynomial degree, factor base size, and sieve range.

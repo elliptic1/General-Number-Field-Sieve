@@ -6,7 +6,7 @@ import sympy as sp
 
 from .polynomial import select_polynomial
 from .sieve import find_relations
-from .square_root import find_factors
+from .sqrt import find_factors
 
 
 def gnfs_factor(n: int, bound: int = 30, interval: int = 50) -> Iterable[int]:

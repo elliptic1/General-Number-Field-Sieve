@@ -11,8 +11,8 @@ from typing import Iterable, List
 
 import sympy as sp
 
-from .linear_algebra import solve_matrix
-from .sieve import Relation
+from ..linalg import solve_matrix
+from ..sieve import Relation
 
 
 def find_factors(n: int, relations: Iterable[Relation], primes: List[int]) -> Iterable[int]:
