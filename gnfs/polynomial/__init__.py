@@ -25,9 +25,18 @@ class Polynomial:
         return result
 
 
-def select_polynomial(n: int) -> Polynomial:
-    """Return a simple polynomial for demonstration purposes."""
-    # In a full GNFS implementation this step is highly complex. Here we
-    # return x - sqrt(n) as a trivial placeholder.
+def select_polynomial(n: int, degree: int = 1) -> Polynomial:
+    """Return a simple polynomial for demonstration purposes.
+
+    Parameters
+    ----------
+    n:
+        Integer to factor.
+    degree:
+        Desired degree of the polynomial.  The current toy implementation only
+        supports degree one and ignores this parameter.
+    """
+    # In a full GNFS implementation this step is highly complex. Here we return
+    # x - sqrt(n) as a trivial placeholder regardless of ``degree``.
     coeffs = (-int(n ** 0.5), 1)
     return Polynomial(coeffs)

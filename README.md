@@ -21,4 +21,11 @@ python cli.py 30
 ```
 
 This will run the simplified GNFS pipeline and print the factors of the given
-number.
+number.  The CLI accepts a few optional arguments:
+
+```bash
+python cli.py 30 --degree 1 --bound 40 --interval 60
+```
+
+Values for ``degree``, ``bound`` and ``interval`` are loaded from
+``default_config.json`` if not specified on the command line.
