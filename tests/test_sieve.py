@@ -12,12 +12,12 @@ def test_polynomial_roots_mod_p():
 
 def test_find_relations_produces_smooth_values():
     poly = select_polynomial(10)
-    relations = list(find_relations(poly, bound=5, interval=5))
-    assert relations, "Expected at least one relation"
     primes = list(sp.primerange(2, 6))
+    relations = list(find_relations(poly, primes=primes, interval=5))
+    assert relations, "Expected at least one relation"
     for rel in relations:
         value = abs(rel.value)
-        for p in primes:
-            while value % p == 0 and value != 0:
+        for p, exp in rel.factors.items():
+            for _ in range(exp):
                 value //= p
         assert value == 1

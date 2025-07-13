@@ -1,4 +1,4 @@
-"""Command-line interface for the toy GNFS implementation."""
+"""Command-line interface for the minimal GNFS demonstration."""
 
 import argparse
 import sys
@@ -7,7 +7,7 @@ from gnfs import gnfs_factor
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description="Factor integers using a toy GNFS")
+    parser = argparse.ArgumentParser(description="Factor integers using a minimal GNFS")
     parser.add_argument("n", type=int, help="Integer to factor")
     args = parser.parse_args(argv)
 

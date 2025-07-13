@@ -12,7 +12,7 @@ SymPy is used for helper arithmetic such as prime generation.
 """
 
 from dataclasses import dataclass
-from typing import Iterable, List
+from typing import Dict, Iterable, List
 
 import sympy as sp
 
@@ -21,11 +21,12 @@ from .polynomial import Polynomial
 
 @dataclass
 class Relation:
-    """Represents a smooth relation."""
+    """Represents a smooth relation discovered during sieving."""
 
     a: int
     b: int
     value: int
+    factors: Dict[int, int]
 
 
 def _polynomial_roots_mod_p(poly: Polynomial, p: int) -> List[int]:
@@ -50,10 +51,10 @@ def _polynomial_roots_mod_p(poly: Polynomial, p: int) -> List[int]:
     return roots
 
 
-def find_relations(poly: Polynomial, bound: int = 30, interval: int = 50) -> Iterable[Relation]:
+def find_relations(
+    poly: Polynomial, primes: List[int], interval: int = 50
+) -> Iterable[Relation]:
     """Find ``B``-smooth relations for ``poly`` using a simple line sieve."""
-
-    primes = list(sp.primerange(2, bound + 1))
 
     offset = interval
     values = [abs(poly.evaluate(a)) for a in range(-interval, interval + 1)]
@@ -68,4 +69,19 @@ def find_relations(poly: Polynomial, bound: int = 30, interval: int = 50) -> Ite
 
     for idx, a in enumerate(range(-interval, interval + 1)):
         if values[idx] == 1:
-            yield Relation(a=a, b=1, value=poly.evaluate(a))
+            val = poly.evaluate(a)
+            if val == 0:
+                continue
+            remaining = abs(val)
+            factor_exp: Dict[int, int] = {}
+            for p in primes:
+                if remaining == 1:
+                    break
+                exp = 0
+                while remaining % p == 0:
+                    exp += 1
+                    remaining //= p
+                if exp:
+                    factor_exp[p] = exp
+            if remaining == 1:
+                yield Relation(a=a, b=1, value=val, factors=factor_exp)
