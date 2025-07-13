@@ -16,7 +16,7 @@ from typing import Dict, Iterable, List
 
 import sympy as sp
 
-from .polynomial import Polynomial
+from ..polynomial import Polynomial
 
 
 @dataclass
