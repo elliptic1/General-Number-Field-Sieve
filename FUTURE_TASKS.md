@@ -11,8 +11,8 @@ The current code base offers only a minimal demonstration. The tasks below break
 - ~~Update imports and tests to match the new layout.~~
 
 ## 3. Improve the CLI
-- Add command line options for polynomial degree, factor base size, and sieve range.
-- Provide a default configuration file.
+- ~~Add command line options for polynomial degree, factor base size, and sieve range.~~
+- ~~Provide a default configuration file.~~
 
 ## 4. Implement Polynomial Selection
 - Replace `select_polynomial` with heuristics for degree and coefficient search.
