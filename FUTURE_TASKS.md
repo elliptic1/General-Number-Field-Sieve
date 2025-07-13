@@ -3,8 +3,8 @@
 The current code base offers only a minimal demonstration. The tasks below break down the remaining work into sessions that can be completed and merged one after another.
 
 ## 1. Prepare the Project
-- Create a `pyproject.toml` and package the code under the `gnfs` namespace.
-- Set up continuous integration running `pytest`.
+- ~~Create a `pyproject.toml` and package the code under the `gnfs` namespace.~~
+- ~~Set up continuous integration running `pytest`.~~
 
 ## 2. Restructure Modules
 - Split `gnfs` into subpackages: `polynomial`, `sieve`, `linalg`, and `sqrt`.
