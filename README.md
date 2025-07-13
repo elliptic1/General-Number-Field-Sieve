@@ -1,10 +1,10 @@
 # General-Number-Field-Sieve
 
-This repository provides a toy implementation of the General Number Field
-Sieve (GNFS) algorithm written in Python. The goal is to illustrate the overall
-structure of the algorithm rather than provide a production-ready factorization
-utility.  The sieving step now performs a genuine (albeit small scale) line
-sieve using `sympy` for arithmetic helpers such as prime generation.
+This repository provides a small demonstration of the General Number Field
+Sieve (GNFS) algorithm written in Python.  While far from optimised it attempts
+to follow the real steps of GNFS: polynomial selection, sieving, linear algebra
+over GF(2) and the square root phase.  The sieving step performs a genuine line
+sieve using ``sympy`` for helper number theoretic routines.
 
 ## Usage
 
