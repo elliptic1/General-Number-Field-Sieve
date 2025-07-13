@@ -15,8 +15,12 @@ The current code base offers only a minimal demonstration. The tasks below break
 - ~~Provide a default configuration file.~~
 
 ## 4. Implement Polynomial Selection
-- Replace `select_polynomial` with heuristics for degree and coefficient search.
-- Add root optimization to favor smooth values.
+- Replace the temporary `x**degree - n` polynomial generation with a
+  search for polynomials that minimize coefficient size.
+- Implement heuristics to choose the optimal degree for the input
+  integer.
+- Add root optimization to favor smooth values and improve sieving
+  efficiency.
 
 ## 5. Expand Sieving
 - Introduce rational and algebraic sieving routines.

@@ -7,6 +7,7 @@ serves primarily as a placeholder for a more sophisticated approach.
 
 from dataclasses import dataclass
 from typing import Tuple
+import math
 
 
 @dataclass
@@ -26,17 +27,28 @@ class Polynomial:
 
 
 def select_polynomial(n: int, degree: int = 1) -> Polynomial:
-    """Return a simple polynomial for demonstration purposes.
+    """Return a basic polynomial for the given ``n`` and ``degree``.
+
+    This routine provides a minimal placeholder for GNFS polynomial
+    selection.  For degree one it chooses ``x - floor(sqrt(n))``.  For
+    higher degrees it returns ``x**degree - n`` which at least matches
+    the required degree even though it lacks the sophisticated search
+    normally used in production implementations.
 
     Parameters
     ----------
     n:
         Integer to factor.
     degree:
-        Desired degree of the polynomial.  The current toy implementation only
-        supports degree one and ignores this parameter.
+        Desired degree of the polynomial. Must be a positive integer.
     """
-    # In a full GNFS implementation this step is highly complex. Here we return
-    # x - sqrt(n) as a trivial placeholder regardless of ``degree``.
-    coeffs = (-int(n ** 0.5), 1)
+    if degree < 1:
+        raise ValueError("degree must be >= 1")
+
+    if degree == 1:
+        coeffs = (-int(math.isqrt(n)), 1)
+    else:
+        coeffs = [-n] + [0] * (degree - 1) + [1]
+        coeffs = tuple(coeffs)
+
     return Polynomial(coeffs)
