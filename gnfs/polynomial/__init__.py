@@ -29,11 +29,11 @@ class Polynomial:
 def select_polynomial(n: int, degree: int = 1) -> Polynomial:
     """Return a basic polynomial for the given ``n`` and ``degree``.
 
-    This routine provides a minimal placeholder for GNFS polynomial
-    selection.  For degree one it chooses ``x - floor(sqrt(n))``.  For
-    higher degrees it returns ``x**degree - n`` which at least matches
-    the required degree even though it lacks the sophisticated search
-    normally used in production implementations.
+    This function offers a trivial construction for demonstration
+    purposes.  For degree one it chooses ``x - floor(sqrt(n))``.
+    For higher degrees it simply builds ``x**degree - n``.  A real
+    implementation would search for polynomials with small coefficients
+    and favourable root properties.
 
     Parameters
     ----------
@@ -45,9 +45,12 @@ def select_polynomial(n: int, degree: int = 1) -> Polynomial:
     if degree < 1:
         raise ValueError("degree must be >= 1")
 
+    # Construct coefficients for a very small polynomial.
     if degree == 1:
+        # Linear case: x - floor(sqrt(n))
         coeffs = (-int(math.isqrt(n)), 1)
     else:
+        # Higher degree placeholder: x**degree - n
         coeffs = [-n] + [0] * (degree - 1) + [1]
         coeffs = tuple(coeffs)
 

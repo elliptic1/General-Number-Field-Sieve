@@ -21,6 +21,14 @@ The current code base offers only a minimal demonstration. The tasks below break
   integer.
 - Add root optimization to favor smooth values and improve sieving
   efficiency.
+- Create a `PolynomialFinder` class that encapsulates the search logic.
+- Start with a stub that returns the current placeholder polynomial so
+  existing tests continue to pass.
+- Extend the finder to enumerate candidate parameter sets within user
+  defined bounds and score them with Murphy's `E` metric.
+- Update `select_polynomial` to call the finder once it can produce
+  better polynomials.
+- Add unit tests exercising the finder interface and scoring functions.
 
 ## 5. Expand Sieving
 - Introduce rational and algebraic sieving routines.
