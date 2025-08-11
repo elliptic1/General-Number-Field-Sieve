@@ -24,3 +24,8 @@ def test_select_polynomial_higher_degree():
     # where m = round(n ** (1/3)) = 2, leading to coefficients
     # (-2, 12, 6, 1)
     assert poly.coeffs == (-2, 12, 6, 1)
+
+
+def test_select_polynomial_invalid_degree():
+    with pytest.raises(ValueError):
+        select_polynomial(10, degree=0)
