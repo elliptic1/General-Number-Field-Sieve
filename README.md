@@ -24,6 +24,25 @@ of the following stages:
 While the implementation is intentionally minimalist, each component now
 reflects the genuine algorithms behind GNFS rather than toy placeholders.
 
+## Project structure
+
+The repository mirrors the architecture of production GNFS codebases.  Each
+stage of the algorithm lives in its own module to make the pipeline explicit:
+
+* `gnfs/polynomial` – constructs polynomials of the form `(x + m)^d - n` with a
+  real root modulo `n` and a small constant term.
+* `gnfs/sieve` – carries out a logarithmic line sieve, locating roots modulo
+  primes and gathering `B`‑smooth relations.
+* `gnfs/linalg` – builds an exponent matrix over `GF(2)` and performs Gaussian
+  elimination to determine dependencies.
+* `gnfs/sqrt` – combines dependent relations into a congruence of squares and
+  extracts non‑trivial factors via the greatest common divisor.
+* `gnfs/factor` – a thin orchestration layer that links the stages into a
+  working factorisation pipeline.
+
+Although compact, these modules implement the real mathematics of the sieve and
+illustrate the depth of the underlying algorithms.
+
 ## Usage
 
 The project exposes a simple command line interface.  After cloning the
