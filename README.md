@@ -1,10 +1,28 @@
 # General-Number-Field-Sieve
 
-This repository provides a small demonstration of the General Number Field
-Sieve (GNFS) algorithm written in Python.  While far from optimised it attempts
-to follow the real steps of GNFS: polynomial selection, sieving, linear algebra
-over GF(2) and the square root phase.  The sieving step performs a genuine line
-sieve using ``sympy`` for helper number theoretic routines.
+This repository provides a compact yet faithful implementation of the General
+Number Field Sieve (GNFS) algorithm written in Python.  The code mirrors the
+real pipeline used in large scale integer factorisation projects and consists
+of the following stages:
+
+1. **Polynomial selection** – ``gnfs.polynomial`` constructs a polynomial of
+   the form ``(x + m)^d - n`` so that ``x = -m`` is a root modulo ``n`` and the
+   constant term is small.  This is the classic GNFS approach and replaces the
+   earlier toy ``x^d - n`` construction.
+2. **Sieving** – ``gnfs.sieve`` performs a logarithmic line sieve over a factor
+   base.  For each prime in the base the roots of the polynomial modulo that
+   prime are located and their logarithms are subtracted from a sieve array.
+   Entries with small residuals are trial‑factored to collect ``B``‑smooth
+   relations.
+3. **Linear algebra** – ``gnfs.linalg`` builds an exponent matrix over GF(2)
+   from the collected relations and computes dependencies between them using
+   Gaussian elimination.
+4. **Square root step** – ``gnfs.sqrt`` combines dependent relations to produce
+   a congruence of squares and extracts a non‑trivial factor of ``n`` via a
+   greatest common divisor.
+
+While the implementation is intentionally minimalist, each component now
+reflects the genuine algorithms behind GNFS rather than toy placeholders.
 
 ## Usage
 

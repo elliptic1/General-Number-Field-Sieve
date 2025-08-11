@@ -20,4 +20,7 @@ def test_select_polynomial_higher_degree():
     poly = select_polynomial(10, degree=3)
     assert isinstance(poly, Polynomial)
     assert poly.degree() == 3
-    assert poly.coeffs == (-10, 0, 0, 1)
+    # For n=10 and degree=3 we expect the (x + m)^3 - n construction
+    # where m = round(n ** (1/3)) = 2, leading to coefficients
+    # (-2, 12, 6, 1)
+    assert poly.coeffs == (-2, 12, 6, 1)
