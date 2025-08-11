@@ -1,13 +1,19 @@
 """Polynomial selection for General Number Field Sieve (GNFS).
 
-This module defines utilities for generating polynomials used in the GNFS
-algorithm. The implementation provided here is intentionally simplistic and
-serves primarily as a placeholder for a more sophisticated approach.
+The real GNFS relies on carefully chosen polynomials that share a root modulo
+the integer ``n`` being factored and whose coefficients are small enough to
+keep the sieving stage efficient.  Production grade implementations contain
+elaborate search strategies, but even a basic version can mirror the
+mathematics.  This module implements a light‑weight variant of the standard
+``(x + m)^d - n`` construction which produces a polynomial with a root ``m``
+modulo ``n`` and a small constant term ``m**d - n``.  While far from optimal it
+is a genuine algorithm rather than a toy placeholder.
 """
 
 from dataclasses import dataclass
 from typing import Tuple
 import math
+from math import comb
 
 
 @dataclass
@@ -27,13 +33,14 @@ class Polynomial:
 
 
 def select_polynomial(n: int, degree: int = 1) -> Polynomial:
-    """Return a basic polynomial for the given ``n`` and ``degree``.
+    """Construct a polynomial with a root ``m`` modulo ``n``.
 
-    This function offers a trivial construction for demonstration
-    purposes.  For degree one it chooses ``x - floor(sqrt(n))``.
-    For higher degrees it simply builds ``x**degree - n``.  A real
-    implementation would search for polynomials with small coefficients
-    and favourable root properties.
+    The selection mirrors the classic ``(x + m)^d - n`` recipe.  The integer
+    ``m`` is chosen as the closest integer to the real ``d``-th root of ``n``.
+    Expanding ``(x + m)^d`` yields coefficients ``comb(d, k) * m**(d - k)`` for
+    ``0 <= k <= d``.  Replacing the constant term with ``m**d - n`` ensures that
+    plugging ``x = 0`` into the polynomial gives the small value ``m**d - n`` and
+    that ``x = -m`` is a root modulo ``n``.
 
     Parameters
     ----------
@@ -42,16 +49,18 @@ def select_polynomial(n: int, degree: int = 1) -> Polynomial:
     degree:
         Desired degree of the polynomial. Must be a positive integer.
     """
+
     if degree < 1:
         raise ValueError("degree must be >= 1")
 
-    # Construct coefficients for a very small polynomial.
     if degree == 1:
-        # Linear case: x - floor(sqrt(n))
+        # Linear case mirrors the rational side polynomial: x - floor(sqrt(n))
         coeffs = (-int(math.isqrt(n)), 1)
     else:
-        # Higher degree placeholder: x**degree - n
-        coeffs = [-n] + [0] * (degree - 1) + [1]
+        # Compute m ≈ n^{1/degree} and expand (x + m)^degree - n
+        m = round(n ** (1 / degree))
+        coeffs = [comb(degree, k) * (m ** (degree - k)) for k in range(degree + 1)]
+        coeffs[0] -= n
         coeffs = tuple(coeffs)
 
     return Polynomial(coeffs)

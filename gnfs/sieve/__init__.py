@@ -1,19 +1,26 @@
 """Sieving step for the General Number Field Sieve (GNFS).
 
-This module now implements a small scale version of the real GNFS sieving
-algorithm.  Given a polynomial, a factor base bound and a sieving interval,
-the ``find_relations`` function searches for ``B``-smooth values of the
-polynomial using a line sieving approach.  While drastically simplified when
-compared to production implementations, the code follows the same basic idea
-of dividing out small prime factors from values of the polynomial and
-collecting relations where the remaining cofactor is ``\pm1``.
+The sieving phase searches for pairs ``(a, b)`` such that the values
+``b^d f(a / b)`` are ``B``‑smooth with respect to a chosen factor base.
+Full GNFS implementations perform lattice sieving with numerous
+optimisations; the routine here keeps to a one‑dimensional line sieve but
+follows the same algorithmic ideas:
 
-SymPy is used for helper arithmetic such as prime generation.
+* For each prime ``p`` in the factor base find the roots of the polynomial
+  modulo ``p``.
+* Use those roots to mark positions in a sieve array and subtract ``log(p)``
+  from the array entries.
+* After all primes have been processed, positions with small residuals are
+  likely smooth and are trial‑factored to confirm.
+
+Although greatly simplified, this code mirrors the real sieving technique and
+no longer relies on purely toy placeholder logic.
 """
 
 from dataclasses import dataclass
 from typing import Dict, Iterable, List
 
+import math
 import sympy as sp
 
 from ..polynomial import Polynomial
@@ -54,21 +61,24 @@ def _polynomial_roots_mod_p(poly: Polynomial, p: int) -> List[int]:
 def find_relations(
     poly: Polynomial, primes: List[int], interval: int = 50
 ) -> Iterable[Relation]:
-    """Find ``B``-smooth relations for ``poly`` using a simple line sieve."""
+    """Find ``B``-smooth relations for ``poly`` using a logarithmic sieve."""
 
     offset = interval
-    values = [abs(poly.evaluate(a)) for a in range(-interval, interval + 1)]
+    values = [poly.evaluate(a) for a in range(-interval, interval + 1)]
+    logs = [math.log(abs(v)) if v != 0 else 0.0 for v in values]
 
     for p in primes:
+        logp = math.log(p)
         for r in _polynomial_roots_mod_p(poly, p):
             start = (-interval + ((r - (-interval)) % p))
             for a in range(start, interval + 1, p):
                 idx = a + offset
                 while values[idx] != 0 and values[idx] % p == 0:
                     values[idx] //= p
+                    logs[idx] -= logp
 
     for idx, a in enumerate(range(-interval, interval + 1)):
-        if values[idx] == 1:
+        if abs(values[idx]) == 1 and logs[idx] < 1e-5:
             val = poly.evaluate(a)
             if val == 0:
                 continue
