@@ -1,6 +1,8 @@
 import sympy as sp
-from gnfs.polynomial import Polynomial, select_polynomial
-from gnfs.sieve import _polynomial_roots_mod_p, find_relations
+from gnfs.polynomial.polynomial import Polynomial
+from gnfs.polynomial.selection import select_polynomial
+from gnfs.sieve.roots import _polynomial_roots_mod_p
+from gnfs.sieve.sieve import find_relations
 
 
 def test_polynomial_roots_mod_p():
@@ -8,6 +10,17 @@ def test_polynomial_roots_mod_p():
     poly = Polynomial((-1, 0, 1))
     roots = _polynomial_roots_mod_p(poly, 3)
     assert set(roots) == {1, 2}
+
+
+def test_polynomial_roots_mod_p_no_root():
+    poly = Polynomial((1, 0, 1))  # x^2 + 1 has no roots mod 3
+    assert _polynomial_roots_mod_p(poly, 3) == []
+
+
+def test_polynomial_roots_mod_p_repeated_root():
+    poly = Polynomial((1, -2, 1))  # (x - 1)^2 has root 1 twice mod 5
+    roots = _polynomial_roots_mod_p(poly, 5)
+    assert roots == [1, 1]
 
 
 def test_find_relations_produces_smooth_values():
