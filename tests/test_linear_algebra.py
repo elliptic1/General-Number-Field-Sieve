@@ -1,6 +1,6 @@
 import numpy as np
-from gnfs.linalg import solve_matrix, _nullspace_mod2
-from gnfs.sieve import Relation
+from gnfs.linalg.matrix import _nullspace_mod2, solve_matrix
+from gnfs.sieve.relation import Relation
 
 
 def test_solve_matrix_returns_dependency():
@@ -18,3 +18,24 @@ def test_nullspace_mod2_basic_case():
     basis = _nullspace_mod2(matrix)
     assert len(basis) == 1
     assert np.array_equal(basis[0], np.array([1, 1, 1]))
+
+
+def test_nullspace_mod2_no_nullspace():
+    matrix = np.eye(2, dtype=int)
+    basis = _nullspace_mod2(matrix)
+    assert basis == []
+
+
+def test_solve_matrix_no_relations():
+    assert solve_matrix([], [2, 3]) == []
+
+
+def test_solve_matrix_multiple_primes_dependency():
+    primes = [2, 3]
+    relations = [
+        Relation(a=1, b=1, value=2, factors={2: 1}),
+        Relation(a=1, b=1, value=3, factors={3: 1}),
+        Relation(a=1, b=1, value=6, factors={2: 1, 3: 1}),
+    ]
+    deps = solve_matrix(relations, primes)
+    assert deps == [[0, 1, 2]]
