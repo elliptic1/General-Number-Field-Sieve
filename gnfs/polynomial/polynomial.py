@@ -18,3 +18,12 @@ class Polynomial:
         for power, coeff in enumerate(self.coeffs):
             result += coeff * (x ** power)
         return result
+
+    def evaluate_homogeneous(self, a: int, b: int) -> int:
+        """Evaluate the homogenised polynomial ``b^d f(a / b)``."""
+
+        degree = self.degree()
+        result = 0
+        for power, coeff in enumerate(self.coeffs):
+            result += coeff * (a ** power) * (b ** (degree - power))
+        return result

@@ -62,8 +62,9 @@ def solve_matrix(relations: Iterable[Relation], primes: List[int]) -> List[List[
     rel_list = list(relations)
     if not rel_list:
         return []
+    combined_factors = [rel.combined_factors() for rel in rel_list]
     exponent_matrix = np.array(
-        [[rel.factors.get(p, 0) % 2 for rel in rel_list] for p in primes],
+        [[factors.get(p, 0) % 2 for factors in combined_factors] for p in primes],
         dtype=int,
     )
     basis = _nullspace_mod2(exponent_matrix)
