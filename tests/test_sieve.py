@@ -24,13 +24,18 @@ def test_polynomial_roots_mod_p_repeated_root():
 
 
 def test_find_relations_produces_smooth_values():
-    poly = select_polynomial(10)
+    selection = select_polynomial(10)
     primes = list(sp.primerange(2, 6))
-    relations = list(find_relations(poly, primes=primes, interval=5))
+    relations = list(find_relations(selection, primes=primes, interval=5))
     assert relations, "Expected at least one relation"
     for rel in relations:
-        value = abs(rel.value)
-        for p, exp in rel.factors.items():
+        value = abs(rel.algebraic_value)
+        for p, exp in rel.algebraic_factors.items():
             for _ in range(exp):
                 value //= p
         assert value == 1
+        rat = abs(rel.rational_value)
+        for p, exp in rel.rational_factors.items():
+            for _ in range(exp):
+                rat //= p
+        assert rat == 1

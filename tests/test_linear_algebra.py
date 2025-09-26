@@ -1,4 +1,6 @@
 import numpy as np
+import numpy as np
+
 from gnfs.linalg.matrix import _nullspace_mod2, solve_matrix
 from gnfs.sieve.relation import Relation
 
@@ -6,8 +8,22 @@ from gnfs.sieve.relation import Relation
 def test_solve_matrix_returns_dependency():
     primes = [2]
     relations = [
-        Relation(a=1, b=1, value=2, factors={2: 1}),
-        Relation(a=2, b=1, value=2, factors={2: 1}),
+        Relation(
+            a=1,
+            b=1,
+            algebraic_value=2,
+            rational_value=1,
+            algebraic_factors={2: 1},
+            rational_factors={},
+        ),
+        Relation(
+            a=2,
+            b=1,
+            algebraic_value=2,
+            rational_value=1,
+            algebraic_factors={2: 1},
+            rational_factors={},
+        ),
     ]
     deps = solve_matrix(relations, primes)
     assert deps == [[0, 1]]
@@ -33,9 +49,30 @@ def test_solve_matrix_no_relations():
 def test_solve_matrix_multiple_primes_dependency():
     primes = [2, 3]
     relations = [
-        Relation(a=1, b=1, value=2, factors={2: 1}),
-        Relation(a=1, b=1, value=3, factors={3: 1}),
-        Relation(a=1, b=1, value=6, factors={2: 1, 3: 1}),
+        Relation(
+            a=1,
+            b=1,
+            algebraic_value=2,
+            rational_value=1,
+            algebraic_factors={2: 1},
+            rational_factors={},
+        ),
+        Relation(
+            a=1,
+            b=1,
+            algebraic_value=3,
+            rational_value=1,
+            algebraic_factors={3: 1},
+            rational_factors={},
+        ),
+        Relation(
+            a=1,
+            b=1,
+            algebraic_value=6,
+            rational_value=1,
+            algebraic_factors={2: 1, 3: 1},
+            rational_factors={},
+        ),
     ]
     deps = solve_matrix(relations, primes)
     assert deps == [[0, 1, 2]]

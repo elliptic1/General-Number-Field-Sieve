@@ -10,5 +10,15 @@ class Relation:
 
     a: int
     b: int
-    value: int
-    factors: Dict[int, int]
+    algebraic_value: int
+    rational_value: int
+    algebraic_factors: Dict[int, int]
+    rational_factors: Dict[int, int]
+
+    def combined_factors(self) -> Dict[int, int]:
+        """Return exponent counts from both algebraic and rational sides."""
+
+        combined: Dict[int, int] = dict(self.algebraic_factors)
+        for prime, exponent in self.rational_factors.items():
+            combined[prime] = combined.get(prime, 0) + exponent
+        return combined

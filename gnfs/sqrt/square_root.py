@@ -25,8 +25,8 @@ def find_factors(n: int, relations: Iterable[Relation], primes: List[int]) -> It
         prod = 1
         for idx in dep:
             rel = rel_list[idx]
-            x = (x * rel.a) % n
-            prod *= abs(rel.value)
+            x = (x * (rel.rational_value % n)) % n
+            prod *= abs(rel.algebraic_value)
         y = isqrt(prod)
         if y * y != prod:
             # Should not happen if exponents are even, but be safe

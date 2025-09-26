@@ -32,7 +32,7 @@ def gnfs_factor(
         Degree of the algebraic polynomial used in the sieve.
     """
 
-    poly = select_polynomial(n, degree=degree)
+    selection = select_polynomial(n, degree=degree)
     primes: List[int] = list(sp.primerange(2, bound + 1))
-    relations = list(find_relations(poly, primes=primes, interval=interval))
+    relations = list(find_relations(selection, primes=primes, interval=interval))
     return list(find_factors(n, relations, primes))
