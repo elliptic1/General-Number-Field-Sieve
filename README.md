@@ -43,6 +43,14 @@ stage of the algorithm lives in its own module to make the pipeline explicit:
 Although compact, these modules implement the real mathematics of the sieve and
 illustrate the depth of the underlying algorithms.
 
+## Book-length guide
+
+The repository now ships with a full manuscript—*The General Number Field
+Sieve: From Theory to Practice*—that explains the algorithmic pipeline in a
+format suitable for publication. You can find the book in
+`book/manuscript.md`, complete with front matter, chapters covering each stage
+of the implementation, appendices, and guidance on extending the codebase.
+
 ## Usage
 
 The project exposes a simple command line interface.  After cloning the
