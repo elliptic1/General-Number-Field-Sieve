@@ -19,3 +19,10 @@ authors = [
 
 [project.scripts]
 gnfs = "cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+include = ["gnfs*"]
+exclude = ["book*", "tests*"]
