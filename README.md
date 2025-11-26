@@ -31,8 +31,9 @@ stage of the algorithm lives in its own module to make the pipeline explicit:
 
 * `gnfs/polynomial` – constructs polynomials of the form `(x + m)^d - n` with a
   real root modulo `n` and a small constant term.
-* `gnfs/sieve` – carries out a logarithmic line sieve, locating roots modulo
-  primes and gathering `B`‑smooth relations.
+* `gnfs/sieve` – carries out a logarithmic line sieve on both algebraic and
+  rational sides, locating roots modulo primes and gathering `B`‑smooth
+  relations.
 * `gnfs/linalg` – builds an exponent matrix over `GF(2)` and performs Gaussian
   elimination to determine dependencies.
 * `gnfs/sqrt` – combines dependent relations into a congruence of squares and
@@ -73,4 +74,7 @@ python cli.py 30 --degree 1 --bound 40 --interval 60
 ```
 
 Values for ``degree``, ``bound`` and ``interval`` are loaded from
-``default_config.json`` if not specified on the command line.
+``default_config.json`` if not specified on the command line.  The factor
+routine widens the sieving interval in stages until it has collected enough
+relations for the linear algebra step, ensuring the pipeline runs to
+completion instead of stopping early when relations are sparse.

@@ -30,7 +30,14 @@ from .roots import _polynomial_roots_mod_p
 def find_relations(
     selection: PolynomialSelection, primes: List[int], interval: int = 50
 ) -> Iterable[Relation]:
-    """Find ``B``-smooth relations for ``poly`` using a logarithmic sieve."""
+    """Find ``B``-smooth relations using a two-sided logarithmic sieve.
+
+    Both the algebraic polynomial and the rational polynomial are sieved so that
+    candidate pairs ``(a, b)`` have small residuals on *both* sides before the
+    more expensive trial-factoring step is attempted.  This mirrors production
+    GNFS implementations where the rational side sieve is crucial for avoiding
+    a flood of useless candidates.
+    """
 
     algebraic_poly = selection.algebraic
     rational_poly = selection.rational
@@ -51,29 +58,45 @@ def find_relations(
         return remaining, factors
 
     for b in range(1, interval + 1):
-        values = [
+        algebraic_values = [
             algebraic_poly.evaluate_homogeneous(a, b) for a in range(-interval, interval + 1)
         ]
-        logs = [math.log(abs(v)) if v != 0 else 0.0 for v in values]
+        rational_values = [
+            rational_poly.evaluate_homogeneous(a, b) for a in range(-interval, interval + 1)
+        ]
+        algebraic_logs = [math.log(abs(v)) if v != 0 else 0.0 for v in algebraic_values]
+        rational_logs = [math.log(abs(v)) if v != 0 else 0.0 for v in rational_values]
 
         for p in primes:
             logp = math.log(p)
-            roots = _polynomial_roots_mod_p(algebraic_poly, p)
-            if not roots:
-                continue
-            for root in roots:
+            # Algebraic side sieve
+            alg_roots = _polynomial_roots_mod_p(algebraic_poly, p)
+            for root in alg_roots:
                 target = (root * b) % p
                 start = -interval + ((target - (-interval)) % p)
                 for a in range(start, interval + 1, p):
                     idx = a + offset
-                    while values[idx] != 0 and values[idx] % p == 0:
-                        values[idx] //= p
-                        logs[idx] -= logp
+                    while algebraic_values[idx] != 0 and algebraic_values[idx] % p == 0:
+                        algebraic_values[idx] //= p
+                        algebraic_logs[idx] -= logp
+
+            # Rational side sieve
+            rat_roots = _polynomial_roots_mod_p(rational_poly, p)
+            for root in rat_roots:
+                target = (root * b) % p
+                start = -interval + ((target - (-interval)) % p)
+                for a in range(start, interval + 1, p):
+                    idx = a + offset
+                    while rational_values[idx] != 0 and rational_values[idx] % p == 0:
+                        rational_values[idx] //= p
+                        rational_logs[idx] -= logp
 
         for idx, a in enumerate(range(-interval, interval + 1)):
             if math.gcd(a, b) != 1:
                 continue
-            if abs(values[idx]) != 1 or logs[idx] > 1e-5:
+            if abs(algebraic_values[idx]) != 1 or algebraic_logs[idx] > 1e-5:
+                continue
+            if abs(rational_values[idx]) != 1 or rational_logs[idx] > 1e-5:
                 continue
 
             algebraic_value = algebraic_poly.evaluate_homogeneous(a, b)
