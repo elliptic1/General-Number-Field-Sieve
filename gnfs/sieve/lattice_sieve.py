@@ -108,12 +108,32 @@ class LatticeBasis:
         return a, b
     
     def ab_to_lattice(self, a: int, b: int) -> Optional[Tuple[int, int]]:
-        """Convert (a, b) to lattice coordinates, if in lattice."""
-        if (a - self.r * b) % self.q != 0:
+        """Convert (a, b) to lattice coordinates, if in lattice.
+        
+        Solves the system:
+            a = i * v1[0] + j * v2[0]
+            b = i * v1[1] + j * v2[1]
+        
+        Returns (i, j) if the point is in the lattice, None otherwise.
+        """
+        # Compute determinant of the basis matrix
+        det = self.v1[0] * self.v2[1] - self.v1[1] * self.v2[0]
+        
+        if det == 0:
+            # Degenerate basis (shouldn't happen for valid lattice)
             return None
-        j = b
-        i = (a - b * self.r) // self.q
-        return i, j
+        
+        # Solve using Cramer's rule:
+        # i = (a * v2[1] - b * v2[0]) / det
+        # j = (b * v1[0] - a * v1[1]) / det
+        i_num = a * self.v2[1] - b * self.v2[0]
+        j_num = b * self.v1[0] - a * self.v1[1]
+        
+        # Check if solutions are integers
+        if i_num % det != 0 or j_num % det != 0:
+            return None
+        
+        return i_num // det, j_num // det
 
 
 def compute_lattice_basis(q: int, r: int) -> LatticeBasis:
