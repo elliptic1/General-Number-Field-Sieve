@@ -2,6 +2,53 @@ export default function JournalPage() {
   const entries = [
     {
       date: '2026-01-30',
+      title: 'Phase 1.3: Block Lanczos Algorithm',
+      status: 'complete',
+      content: `Implemented Block Lanczos algorithm for O(n²) nullspace computation over GF(2).
+
+**What was implemented:**
+- **SparseMatrixGF2** — Memory-efficient sparse matrix storing only positions of 1s, with fast GF(2) operations
+- **Block Lanczos** — Iterative Krylov subspace method operating on blocks of 64 vectors
+- **Structured Gaussian Elimination** — Preprocessing to reduce matrix size before Block Lanczos
+- **B-orthogonalization** — Proper three-term recurrence maintaining B-orthogonality between blocks
+- **Automatic method selection** — Dense for small matrices (<500 relations), Block Lanczos for large
+
+**Mathematical guarantees:**
+- All nullspace vectors satisfy Ax = 0 over GF(2)
+- Vectors are linearly independent
+- Preprocessing preserves nullspace structure
+
+**Results:**
+- O(n²) vs O(n³) for dense Gaussian elimination
+- 64 tests covering GF(2) arithmetic, rank computation, nullspace correctness, GNFS integration
+
+**Files:** gnfs/linalg/sparse.py, gnfs/linalg/block_lanczos.py, tests/test_block_lanczos.py, tests/test_linalg_math.py`,
+    },
+    {
+      date: '2026-01-30',
+      title: 'Phase 1.2: Lattice Sieving',
+      status: 'complete',
+      content: `Completed lattice sieving implementation, a major improvement over the basic line sieve.
+
+**What was implemented:**
+- **Special-q sieving** — For each special prime q, sieve the sublattice L_q = {(a,b) : a ≡ rb (mod q)}
+- **Lattice basis computation** — Natural basis v1=(q,0), v2=(r,1) with Lagrange reduction for shorter vectors
+- **Smart special-q selection** — Filter for primes with polynomial roots to ensure productive sieving
+- **Logarithmic sieving** — Efficient sieve using log approximations with trial factoring of candidates
+- **Hybrid mode** — Automatic selection between line and lattice sieve based on factor base size
+
+**Benchmark results (n=2021, 25 primes):**
+- Line sieve: 1 relation
+- Lattice sieve: 44 relations (44x more!)
+
+**Why it matters:**
+Lattice sieving reduces work by a factor of q for each special-q prime. By exploring multiple sublattices,
+we find many more smooth relations in the same sieve region.
+
+**Files:** gnfs/sieve/lattice_sieve.py, tests/test_lattice_sieve.py (30 tests)`,
+    },
+    {
+      date: '2026-01-30',
       title: 'Phase 1.1: Polynomial Selection Improvements',
       status: 'complete',
       content: `Completed production-quality polynomial selection with major improvements over the naive approach.
@@ -52,19 +99,9 @@ showing the polynomial selection, smooth relations found, and factor extraction.
 
   const planned = [
     {
-      phase: '1.2',
-      title: 'Lattice Sieving',
-      description: 'Replace line sieve with lattice sieve and special-q. Exponentially faster for large numbers.',
-    },
-    {
-      phase: '1.3', 
-      title: 'Block Lanczos',
-      description: 'Replace O(n³) Gaussian elimination with O(n²) Block Lanczos for sparse matrices.',
-    },
-    {
       phase: '1.4',
       title: 'Square Root Improvements',
-      description: "Montgomery's algorithm for efficient algebraic square roots.",
+      description: "Montgomery's algorithm for efficient algebraic square roots in number fields.",
     },
     {
       phase: '2.1',
@@ -75,6 +112,11 @@ showing the polynomial selection, smooth relations found, and factor extraction.
       phase: '2.2',
       title: 'Parallelization',
       description: 'Multi-threaded sieving and distributed linear algebra.',
+    },
+    {
+      phase: '2.3',
+      title: 'Memory Optimization',
+      description: 'Streaming relations, memory-mapped files, compressed storage, checkpointing.',
     },
   ]
 
