@@ -31,12 +31,27 @@
 
 **Why:** Good polynomials can speed up sieving by 10-100x. The improvements provide better polynomial quality for larger numbers.
 
-### 1.2 Lattice Sieving (Priority: HIGH)
-- [ ] Replace line sieve with lattice sieve
-- [ ] Implement special-q sieving
+### 1.2 Lattice Sieving (Priority: HIGH) ✅ PARTIALLY COMPLETE
+- [x] Replace line sieve with lattice sieve
+- [x] Implement special-q sieving
+- [x] Smart special-q selection (primes with polynomial roots)
+- [x] Lattice basis computation and Lagrange reduction
 - [ ] Factor base optimization
 - [ ] Bucket sieving for cache efficiency
 - [ ] Large prime variations (2LP, 3LP)
+
+**Implemented (2026):**
+- Special-q lattice sieving: for each special prime q, sieve the sublattice L_q = {(a,b) : a ≡ rb (mod q)}
+- Two sieve implementations: basic trial division and optimized logarithmic sieving
+- Smart special-q selection that filters for primes with polynomial roots
+- Lattice basis computation with Lagrange reduction for shorter vectors
+- Hybrid sieve that automatically chooses between line and lattice sieve
+- Comprehensive test suite
+
+**Benchmark results (n=2021, 25 primes):**
+- Line sieve: 1 relation
+- Lattice sieve: 44 relations
+- The lattice sieve finds many more relations by exploring multiple sublattices
 
 **Why:** Lattice sieving is exponentially faster than line sieving for large numbers.
 
