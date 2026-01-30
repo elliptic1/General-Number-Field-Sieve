@@ -13,14 +13,23 @@
 
 ## Phase 1: Core Algorithm Improvements
 
-### 1.1 Polynomial Selection (Priority: HIGH)
-- [ ] Implement Kleinjung's polynomial selection algorithm
-- [ ] Add polynomial rating/scoring (alpha, Murphy E)
-- [ ] Root optimization for algebraic polynomial
-- [ ] Size optimization for coefficients
-- [ ] Support for degree 4, 5, 6 polynomials
+### 1.1 Polynomial Selection (Priority: HIGH) ✅ PARTIALLY COMPLETE
+- [x] Add polynomial rating/scoring (alpha, Murphy E)
+- [x] Base-m expansion for balanced coefficients
+- [x] Size optimization for coefficients (skewness-adjusted)
+- [x] Support for degree 4, 5, 6 polynomials
+- [x] Root counting and smoothness analysis
+- [ ] Implement full Kleinjung's polynomial selection algorithm
+- [ ] Advanced root optimization techniques
 
-**Why:** Good polynomials can speed up sieving by 10-100x. Current naive selection is a major bottleneck.
+**Implemented (2025):**
+- Murphy E scoring combining alpha, size, root properties, and smoothness
+- Base-m expansion replacing naive (x+m)^d-n construction
+- Coefficient optimization with search and local refinement
+- Mathematical correctness fix: f(m) = n (proper GNFS root property)
+- Comprehensive test suite (32 new tests)
+
+**Why:** Good polynomials can speed up sieving by 10-100x. The improvements provide better polynomial quality for larger numbers.
 
 ### 1.2 Lattice Sieving (Priority: HIGH)
 - [ ] Replace line sieve with lattice sieve
