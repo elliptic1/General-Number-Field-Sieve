@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "here-9cbb1"
+  },
+  "targets": {
+    "here-9cbb1": {
+      "hosting": {
+        "gnfs": [
+          "gnfs-edu"
+        ]
+      }
+    }
+  }
+}

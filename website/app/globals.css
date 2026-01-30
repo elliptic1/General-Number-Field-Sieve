@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: 220 20% 4%;
+    --bg-elevated: 220 18% 6%;
+    --bg-card: 220 16% 9%;
+    --text: 210 30% 96%;
+    --text-dim: 215 15% 70%;
+    --text-muted: 215 12% 47%;
+    --accent: 155 85% 63%;
+    --accent-ember: 32 100% 67%;
+    --accent-sky: 220 100% 73%;
+    --border: 0 0% 100% / 0.08;
+    --glow: 155 85% 63% / 0.16;
+    --radius: 0.75rem;
+    
+    /* Semantic mappings */
+    --background: var(--bg);
+    --foreground: var(--text);
+    --card: var(--bg-card);
+    --card-foreground: var(--text);
+    --primary: var(--accent);
+    --primary-foreground: 220 20% 4%;
+    --secondary: var(--bg-elevated);
+    --secondary-foreground: var(--text);
+    --muted: var(--bg-elevated);
+    --muted-foreground: var(--text-muted);
+    --accent-color: var(--accent);
+    --accent-foreground: 220 20% 4%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 210 30% 96%;
+    --input: var(--border);
+    --ring: var(--accent);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Sora', -apple-system, sans-serif;
+    background: 
+      radial-gradient(1200px 600px at 15% -10%, hsl(var(--glow)), transparent 60%),
+      radial-gradient(900px 500px at 85% 0%, hsl(32 100% 67% / 0.14), transparent 55%),
+      hsl(var(--bg));
+    line-height: 1.6;
+    -webkit-text-size-adjust: 100%;
+    position: relative;
+    isolation: isolate;
+  }
+  
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: 0.2;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  body > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+/* Monospace elements */
+code, pre, .font-mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Links */
+a {
+  @apply text-primary transition-colors;
+}
+
+a:hover {
+  @apply text-foreground;
+}
+
+/* Custom scrollbar */
+.code-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.code-scrollbar::-webkit-scrollbar-track {
+  @apply bg-muted rounded;
+}
+
+.code-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded hover:bg-muted-foreground/50;
+}
+
+/* Section label style */
+.section-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  @apply text-primary;
+}
+
+/* Card hover glow */
+.card-glow:hover {
+  border-color: hsl(155 85% 63% / 0.6);
+}
+
+/* Hero gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, hsl(var(--text)) 0%, hsl(var(--accent)) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Primary button */
+.btn-primary {
+  @apply inline-block px-8 py-4 bg-primary text-primary-foreground font-semibold text-sm rounded-lg;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px hsl(155 85% 63% / 0.3);
+}
+
+/* Section backgrounds */
+.section-elevated {
+  @apply bg-[hsl(var(--bg-elevated))];
+}
+
+/* Tech tags */
+.tech-tag {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  @apply text-muted-foreground px-2.5 py-1 bg-white/5 rounded;
+}
+
+/* Category label */
+.category-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  @apply text-[hsl(var(--accent-sky))];
+}
