@@ -32,6 +32,7 @@ from .lattice_sieve import (
     lattice_sieve_for_special_q,
     lattice_sieve_optimized,
     select_special_q_primes,
+    select_special_q_with_roots,
     LatticeBasis,
     compute_lattice_basis,
     reduce_lattice_basis,
@@ -53,6 +54,7 @@ __all__ = [
     "lattice_sieve_for_special_q",
     "lattice_sieve_optimized",
     "select_special_q_primes",
+    "select_special_q_with_roots",
     
     # Lattice utilities
     "LatticeBasis",

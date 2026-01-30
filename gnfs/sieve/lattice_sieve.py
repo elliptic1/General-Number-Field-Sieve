@@ -380,7 +380,11 @@ def lattice_sieve_optimized(
 
 
 def select_special_q_primes(primes: List[int], num_special_q: int = 10) -> List[int]:
-    """Select good special-q primes from the factor base."""
+    """Select good special-q primes from the factor base.
+    
+    Note: This is a basic selection. For best results, use
+    select_special_q_with_roots() which filters for primes with polynomial roots.
+    """
     if not primes:
         return []
     
@@ -398,6 +402,54 @@ def select_special_q_primes(primes: List[int], num_special_q: int = 10) -> List[
     return [candidates[i * step] for i in range(num_special_q)]
 
 
+def select_special_q_with_roots(
+    primes: List[int], 
+    poly, 
+    num_special_q: int = 10,
+    min_q: int = MIN_SPECIAL_Q,
+) -> List[int]:
+    """Select special-q primes that have roots of f(x) mod q.
+    
+    This is more effective than select_special_q_primes because it ensures
+    each special-q will actually produce lattice points to sieve.
+    
+    Args:
+        primes: Factor base primes
+        poly: The algebraic polynomial
+        num_special_q: How many special-q primes to select
+        min_q: Minimum size for special-q
+    
+    Returns:
+        List of primes with roots, preferring larger primes
+    """
+    if not primes:
+        return []
+    
+    # Find primes with roots, starting from larger ones
+    good_q = []
+    for p in reversed(primes):
+        if p < min_q:
+            continue
+        roots = _polynomial_roots_mod_p(poly, p)
+        if roots:
+            good_q.append(p)
+            if len(good_q) >= num_special_q:
+                break
+    
+    # If we didn't find enough, also try smaller primes
+    if len(good_q) < num_special_q:
+        for p in primes:
+            if p in good_q:
+                continue
+            roots = _polynomial_roots_mod_p(poly, p)
+            if roots:
+                good_q.append(p)
+                if len(good_q) >= num_special_q:
+                    break
+    
+    return good_q
+
+
 def find_relations_lattice(
     selection: PolynomialSelection,
     primes: List[int],
@@ -412,6 +464,17 @@ def find_relations_lattice(
     1. Only checking (a,b) pairs in a sublattice (reduces work by factor q)
     2. Better cache locality from the lattice structure
     3. Larger effective sieve region per special-q
+    
+    Args:
+        selection: Polynomial selection (algebraic and rational polynomials)
+        primes: Factor base primes for smoothness testing
+        sieve_region: Size of sieve region (larger = more relations but slower)
+        num_special_q: Number of special-q primes to use
+        special_q_primes: Explicit list of special-q primes (overrides num_special_q)
+        use_log_sieve: Use logarithmic sieving (faster for larger regions)
+    
+    Yields:
+        Relation objects for each smooth (a, b) pair found
     """
     if not primes:
         return
@@ -421,7 +484,10 @@ def find_relations_lattice(
     else:
         if num_special_q is None:
             num_special_q = max(5, min(50, len(primes) // 10))
-        q_primes = select_special_q_primes(primes, num_special_q)
+        # Use the smarter selection that filters for primes with roots
+        q_primes = select_special_q_with_roots(
+            primes, selection.algebraic, num_special_q
+        )
     
     seen = set()
     
