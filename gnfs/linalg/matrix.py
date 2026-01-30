@@ -1,16 +1,24 @@
 """Linear algebra utilities for GNFS.
 
-This module provides a minimal implementation of solving for dependencies
-between relations mod 2.  The matrix is constructed from the exponent
-vectors of the relations and Gaussian elimination over GF(2) is used to
-compute a basis for the nullspace.
+This module provides implementations of solving for dependencies between
+relations mod 2. The matrix is constructed from the exponent vectors of
+the relations and solved over GF(2) to find the nullspace.
+
+Two solvers are available:
+1. Dense Gaussian elimination - O(n³), used for small matrices
+2. Block Lanczos - O(n²), used for large sparse matrices
+
+The high-level `solve_matrix` function automatically chooses the best method.
 """
 
-from typing import Iterable, List
+from typing import Iterable, List, Optional
 
 import numpy as np
 
 from ..sieve import Relation
+
+# Threshold for switching from dense to Block Lanczos
+BLOCK_LANCZOS_THRESHOLD = 500
 
 
 def _nullspace_mod2(matrix: np.ndarray) -> List[np.ndarray]:
@@ -57,20 +65,84 @@ def _nullspace_mod2(matrix: np.ndarray) -> List[np.ndarray]:
     return basis
 
 
-def solve_matrix(relations: Iterable[Relation], primes: List[int]) -> List[List[int]]:
-    """Solve for dependencies between ``relations`` modulo 2."""
+def solve_matrix(
+    relations: Iterable[Relation],
+    primes: List[int],
+    use_block_lanczos: Optional[bool] = None,
+    block_size: int = 64,
+    seed: Optional[int] = None,
+) -> List[List[int]]:
+    """Solve for dependencies between ``relations`` modulo 2.
+    
+    Args:
+        relations: Iterable of Relation objects from sieving
+        primes: List of primes in the factor base
+        use_block_lanczos: Whether to use Block Lanczos algorithm.
+            If None (default), automatically chooses based on matrix size.
+        block_size: Block size for Block Lanczos (default 64)
+        seed: Random seed for Block Lanczos reproducibility
+    
+    Returns:
+        List of dependencies, where each dependency is a list of relation
+        indices whose product has all even exponents.
+    """
     rel_list = list(relations)
     if not rel_list:
         return []
+    
+    n_relations = len(rel_list)
+    n_primes = len(primes)
+    
+    # Handle edge case of empty primes
+    if n_primes == 0:
+        # All relations have "even" exponents (vacuously), each is a dependency
+        return [[i] for i in range(n_relations)]
+    
+    # Decide which solver to use
+    if use_block_lanczos is None:
+        use_block_lanczos = n_relations > BLOCK_LANCZOS_THRESHOLD
+    
     combined_factors = [rel.combined_factors() for rel in rel_list]
-    exponent_matrix = np.array(
-        [[factors.get(p, 0) % 2 for factors in combined_factors] for p in primes],
-        dtype=int,
-    )
-    basis = _nullspace_mod2(exponent_matrix)
+    
+    if use_block_lanczos and n_relations > BLOCK_LANCZOS_THRESHOLD:
+        # Use Block Lanczos with sparse matrix
+        from .sparse import SparseMatrixGF2
+        from .block_lanczos import find_dependencies_block_lanczos
+        
+        # Build sparse matrix (primes x relations)
+        sparse_matrix = SparseMatrixGF2(n_primes, n_relations)
+        for j, factors in enumerate(combined_factors):
+            for i, p in enumerate(primes):
+                if factors.get(p, 0) % 2 == 1:
+                    sparse_matrix.set(i, j)
+        
+        # Find nullspace using Block Lanczos
+        basis = find_dependencies_block_lanczos(
+            sparse_matrix,
+            block_size=block_size,
+            seed=seed,
+        )
+    else:
+        # Use dense Gaussian elimination
+        exponent_matrix = np.array(
+            [[factors.get(p, 0) % 2 for factors in combined_factors] for p in primes],
+            dtype=np.uint8,
+        )
+        basis = _nullspace_mod2(exponent_matrix)
+    
+    # Convert nullspace vectors to dependency lists
     dependencies: List[List[int]] = []
     for vec in basis:
         indices = [i for i, bit in enumerate(vec) if bit == 1]
         if indices:
             dependencies.append(indices)
     return dependencies
+
+
+def solve_matrix_dense(relations: Iterable[Relation], primes: List[int]) -> List[List[int]]:
+    """Solve using dense Gaussian elimination (original implementation).
+    
+    This is kept for compatibility and testing. Use solve_matrix() for
+    production code.
+    """
+    return solve_matrix(relations, primes, use_block_lanczos=False)
