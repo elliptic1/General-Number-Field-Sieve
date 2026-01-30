@@ -227,20 +227,37 @@ def block_lanczos(
             if np.any(X_curr[:, col]):
                 subspace_vectors.append(X_curr[:, col].copy())
         
-        # Compute next block using three-term recurrence
+        # Compute next block using three-term recurrence with B-orthogonalization
         # X_next = B @ X_curr - X_curr @ S_curr - X_prev @ S_prev^T
+        # where S_curr = (X_curr^T B X_curr)^{-1} (X_curr^T B^2 X_curr)
         
-        # For stability, we use a simplified recurrence that maintains key properties
-        # In practice, we compute S to orthogonalize against previous blocks
+        # Compute S_curr for B-orthogonalization
+        # S_curr should make X_next B-orthogonal to X_curr
+        # We need: X_curr^T B X_next = 0
+        # X_next = BX - X_curr @ S_curr - X_prev @ S_prev^T
+        # X_curr^T B X_next = X_curr^T B BX - X_curr^T B X_curr @ S_curr - X_curr^T B X_prev @ S_prev^T
+        #                   = XtBX @ XtBX - XtBX @ S_curr - (X_curr^T B X_prev) @ S_prev^T = 0
+        # If XtBX is invertible: S_curr = XtBX - XtBX^{-1} @ (X_curr^T B X_prev) @ S_prev^T
         
-        # Simplified: just compute B @ X_curr and reduce
+        # Try to compute S_curr using XtBX
+        XtBX_inv = _invert_gf2(XtBX)
+        
         X_next = BX.copy()
         
-        # Subtract projection onto X_curr (orthogonalize)
-        proj = _inner_product_block(X_curr, X_next)
-        X_next = (X_next - (X_curr @ proj) % 2) % 2
+        if XtBX_inv is not None:
+            # Proper B-orthogonalization
+            # S_curr makes X_next B-orthogonal to X_curr
+            # We want X_curr^T B X_next = 0
+            # X_curr^T B X_next = X_curr^T B (BX - X_curr @ S_curr) = XtBX^2 - XtBX @ S_curr
+            # Setting S_curr = XtBX gives XtBX^2 - XtBX^2 = 0 (mod 2)
+            S_curr = XtBX
+            X_next = (X_next - (X_curr @ S_curr) % 2) % 2
+        else:
+            # Fallback: use unweighted projection when XtBX is singular
+            S_curr = _inner_product_block(X_curr, X_next)
+            X_next = (X_next - (X_curr @ S_curr) % 2) % 2
         
-        # Subtract projection onto X_prev
+        # Subtract projection onto X_prev (three-term recurrence)
         if not _is_zero_block(X_prev):
             proj_prev = _inner_product_block(X_prev, X_next)
             X_next = (X_next - (X_prev @ proj_prev) % 2) % 2
@@ -248,7 +265,7 @@ def block_lanczos(
         # Move to next iteration
         X_prev = X_curr
         X_curr = X_next
-        S_prev = proj
+        S_prev = S_curr
         
         # Check for convergence (X became zero or very low rank)
         if _is_zero_block(X_curr) or _rank_gf2(X_curr) < block_size // 4:

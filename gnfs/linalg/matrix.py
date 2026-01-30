@@ -104,7 +104,7 @@ def solve_matrix(
     
     combined_factors = [rel.combined_factors() for rel in rel_list]
     
-    if use_block_lanczos and n_relations > BLOCK_LANCZOS_THRESHOLD:
+    if use_block_lanczos:
         # Use Block Lanczos with sparse matrix
         from .sparse import SparseMatrixGF2
         from .block_lanczos import find_dependencies_block_lanczos
