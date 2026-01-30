@@ -55,11 +55,19 @@
 
 **Why:** Lattice sieving is exponentially faster than line sieving for large numbers.
 
-### 1.3 Linear Algebra (Priority: HIGH)
-- [ ] Implement Block Lanczos algorithm
-- [ ] Or Block Wiedemann (better for distributed)
-- [ ] Sparse matrix representation
-- [ ] Structured Gaussian elimination as preprocessing
+### 1.3 Linear Algebra (Priority: HIGH) ✅ PARTIALLY COMPLETE
+- [x] Implement Block Lanczos algorithm
+- [x] Sparse matrix representation (SparseMatrixGF2)
+- [x] Structured Gaussian elimination as preprocessing
+- [ ] Block Wiedemann (alternative for distributed computing)
+- [ ] Further optimization for very large matrices
+
+**Implemented (2026):**
+- Sparse matrix class (SparseMatrixGF2) with efficient GF(2) operations
+- Block Lanczos algorithm for finding nullspace over GF(2)
+- Structured Gaussian Elimination preprocessing to reduce matrix size
+- Automatic method selection: dense for small matrices, Block Lanczos for large
+- Comprehensive test suite (25 tests)
 
 **Why:** Current O(n³) Gaussian elimination won't scale. Block Lanczos is O(n²) with small constants.
 
