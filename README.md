@@ -1,80 +1,170 @@
-# General-Number-Field-Sieve
+<div align="center">
 
-This repository provides a compact yet faithful implementation of the General
-Number Field Sieve (GNFS) algorithm written in Python.  The code mirrors the
-real pipeline used in large scale integer factorisation projects and consists
-of the following stages:
+# General Number Field Sieve
 
-1. **Polynomial selection** – ``gnfs.polynomial`` constructs a polynomial of
-   the form ``(x + m)^d - n`` so that ``x = -m`` is a root modulo ``n`` and the
-   constant term is small.  This is the classic GNFS approach and replaces the
-   earlier toy ``x^d - n`` construction.
-2. **Sieving** – ``gnfs.sieve`` performs a logarithmic line sieve over a factor
-   base.  For each prime in the base the roots of the polynomial modulo that
-   prime are located and their logarithms are subtracted from a sieve array.
-   Entries with small residuals are trial‑factored to collect ``B``‑smooth
-   relations.
-3. **Linear algebra** – ``gnfs.linalg`` builds an exponent matrix over GF(2)
-   from the collected relations and computes dependencies between them using
-   Gaussian elimination.
-4. **Square root step** – ``gnfs.sqrt`` combines dependent relations to produce
-   a congruence of squares and extracts a non‑trivial factor of ``n`` via a
-   greatest common divisor.
+**The fastest known algorithm for factoring large integers — implemented in Python**
 
-While the implementation is intentionally minimalist, each component now
-reflects the genuine algorithms behind GNFS rather than toy placeholders.
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-## Project structure
+[Live Demo](https://gnfs-edu.web.app) · [Documentation](https://gnfs-edu.web.app/learn) · [Report Bug](https://github.com/elliptic1/General-Number-Field-Sieve/issues)
 
-The repository mirrors the architecture of production GNFS codebases.  Each
-stage of the algorithm lives in its own module to make the pipeline explicit:
+<img src="https://img.shields.io/github/stars/elliptic1/General-Number-Field-Sieve?style=social" alt="GitHub stars">
 
-* `gnfs/polynomial` – constructs polynomials of the form `(x + m)^d - n` with a
-  real root modulo `n` and a small constant term.
-* `gnfs/sieve` – carries out a logarithmic line sieve on both algebraic and
-  rational sides, locating roots modulo primes and gathering `B`‑smooth
-  relations.
-* `gnfs/linalg` – builds an exponent matrix over `GF(2)` and performs Gaussian
-  elimination to determine dependencies.
-* `gnfs/sqrt` – combines dependent relations into a congruence of squares and
-  extracts non‑trivial factors via the greatest common divisor.
-* `gnfs/factor` – a thin orchestration layer that links the stages into a
-  working factorisation pipeline.
+</div>
 
-Although compact, these modules implement the real mathematics of the sieve and
-illustrate the depth of the underlying algorithms.
+---
 
-## Book-length guide
+## ✨ Features
 
-The repository now ships with a full manuscript—*The General Number Field
-Sieve: From Theory to Practice*—that explains the algorithmic pipeline in a
-format suitable for publication. You can find the book in
-`book/manuscript.md`, complete with front matter, chapters covering each stage
-of the implementation, appendices, and guidance on extending the codebase.
+- 🔢 **Real GNFS Implementation** — Not a toy. Implements the actual algorithm used to factor RSA keys.
+- 📚 **Educational Focus** — Clear, readable code with extensive documentation explaining the math.
+- 🌐 **Interactive Playground** — [Try it in your browser](https://gnfs-edu.web.app/playground) with Pyodide.
+- 📖 **Full Manuscript** — Ships with a book-length guide: *The General Number Field Sieve: From Theory to Practice*.
 
-## Usage
-
-The project exposes a simple command line interface.  After cloning the
-repository install the ``sympy`` dependency and you can factor an integer as
-follows:
+## 🚀 Quick Start
 
 ```bash
-pip install sympy
+# Clone the repository
+git clone https://github.com/elliptic1/General-Number-Field-Sieve.git
+cd General-Number-Field-Sieve
+
+# Install dependencies
+pip install sympy numpy
+
+# Factor a number
+python cli.py 8051
+# → 8051 = 83 × 97
 ```
+
+## 📦 Installation
 
 ```bash
-python cli.py 30
+pip install sympy numpy
 ```
 
-This will run the simplified GNFS pipeline and print the factors of the given
-number.  The CLI accepts a few optional arguments:
+Or use the included virtual environment:
 
 ```bash
-python cli.py 30 --degree 1 --bound 40 --interval 60
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-Values for ``degree``, ``bound`` and ``interval`` are loaded from
-``default_config.json`` if not specified on the command line.  The factor
-routine widens the sieving interval in stages until it has collected enough
-relations for the linear algebra step, ensuring the pipeline runs to
-completion instead of stopping early when relations are sparse.
+## 💡 Usage
+
+### Command Line
+
+```bash
+# Basic usage
+python cli.py 91
+
+# With custom parameters
+python cli.py 8051 --degree 1 --bound 50 --interval 100
+```
+
+### As a Library
+
+```python
+from gnfs import gnfs_factor
+
+# Factor a semiprime
+factors = gnfs_factor(8051, bound=50, interval=100)
+print(f"8051 = {factors[0]} × {factors[1]}")
+# → 8051 = 83 × 97
+```
+
+### Interactive (Browser)
+
+Visit [gnfs-edu.web.app/playground](https://gnfs-edu.web.app/playground) to run GNFS directly in your browser — no installation required.
+
+## 🏗️ How It Works
+
+The General Number Field Sieve factors integers through four stages:
+
+```
+┌─────────────────────┐     ┌─────────────────────┐
+│  1. Polynomial      │────▶│  2. Sieving         │
+│     Selection       │     │                     │
+│  Choose f(x), g(x)  │     │  Find B-smooth      │
+│  with shared root   │     │  relations          │
+└─────────────────────┘     └──────────┬──────────┘
+                                       │
+┌─────────────────────┐     ┌──────────▼──────────┐
+│  4. Square Root     │◀────│  3. Linear Algebra  │
+│                     │     │                     │
+│  Extract factors    │     │  Gaussian elim      │
+│  via gcd(x-y, n)    │     │  over GF(2)         │
+└─────────────────────┘     └─────────────────────┘
+```
+
+| Stage | Module | Description |
+|-------|--------|-------------|
+| **Polynomial Selection** | `gnfs/polynomial/` | Constructs polynomials sharing a root mod n |
+| **Sieving** | `gnfs/sieve/` | Logarithmic sieve to find smooth relations |
+| **Linear Algebra** | `gnfs/linalg/` | Finds dependencies using Gaussian elimination |
+| **Square Root** | `gnfs/sqrt/` | Combines relations to extract factors |
+
+## 📁 Project Structure
+
+```
+General-Number-Field-Sieve/
+├── gnfs/
+│   ├── __init__.py          # Public API
+│   ├── factor.py            # Main factorization pipeline
+│   ├── polynomial/          # Polynomial selection
+│   ├── sieve/               # Relation finding
+│   ├── linalg/              # Matrix operations over GF(2)
+│   └── sqrt/                # Square root extraction
+├── book/                    # Full manuscript
+├── website/                 # Interactive demo site
+├── tests/                   # Test suite
+├── cli.py                   # Command-line interface
+└── README.md
+```
+
+## 📖 Documentation
+
+- **[Interactive Tutorial](https://gnfs-edu.web.app/learn)** — Step-by-step guide with live examples
+- **[API Reference](https://gnfs-edu.web.app/reference/glossary)** — Glossary of terms and concepts
+- **[Book](book/manuscript.md)** — *The General Number Field Sieve: From Theory to Practice*
+
+## 🧪 Testing
+
+```bash
+pytest tests/
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Whether it's:
+
+- 🐛 Bug fixes
+- ✨ New features
+- 📖 Documentation improvements
+- 🧪 Additional test cases
+
+Please feel free to submit a Pull Request.
+
+## 📚 References
+
+- Lenstra, A. K., & Lenstra, H. W. (1993). *The Development of the Number Field Sieve*
+- Pomerance, C. (1996). *A Tale of Two Sieves*
+- Buhler, J. P., Lenstra, H. W., & Pomerance, C. (1993). *Factoring integers with the number field sieve*
+
+## ⚠️ Disclaimer
+
+This is an **educational implementation**. While it implements the real GNFS algorithm, it is not optimized for factoring large integers. For serious cryptographic work, use established tools like [CADO-NFS](https://gitlab.inria.fr/cado-nfs/cado-nfs) or [msieve](https://github.com/radii/msieve).
+
+## 📄 License
+
+MIT © [Todd B Smith](https://toddbsmith.com)
+
+---
+
+<div align="center">
+
+**[Website](https://gnfs-edu.web.app)** · **[GitHub](https://github.com/elliptic1/General-Number-Field-Sieve)** · **[Report Issue](https://github.com/elliptic1/General-Number-Field-Sieve/issues)**
+
+</div>
