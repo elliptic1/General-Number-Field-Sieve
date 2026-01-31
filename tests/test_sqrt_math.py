@@ -106,6 +106,45 @@ class TestNumberFieldElement:
         alpha_cube = alpha_sq * alpha
         assert alpha_cube.coeffs == [Fraction(2), Fraction(0), Fraction(0)]
     
+    def test_multiplication_cubic_high_degree(self):
+        """Test α² * α² = α⁴ = 2α in cubic field (regression test).
+        
+        This specifically tests reduction of α⁴ which requires shifting
+        contributions when applying α³ = 2.
+        """
+        # x³ - 2, so α³ = 2
+        poly = [-2, 0, 0, 1]
+        
+        alpha = NumberFieldElement.alpha(poly)
+        alpha_sq = alpha * alpha
+        
+        # α² * α² = α⁴ = α * α³ = α * 2 = 2α
+        alpha_4 = alpha_sq * alpha_sq
+        assert alpha_4.coeffs == [Fraction(0), Fraction(2), Fraction(0)], \
+            f"Expected [0, 2, 0] for α⁴, got {alpha_4.coeffs}"
+        
+        # Also verify via different path: α³ * α = 2 * α = 2α
+        alpha_3 = alpha_sq * alpha
+        alpha_4_alt = alpha_3 * alpha
+        assert alpha_4_alt.coeffs == [Fraction(0), Fraction(2), Fraction(0)]
+    
+    def test_multiplication_quartic(self):
+        """Test multiplication in quartic field."""
+        # x⁴ - 2, so α⁴ = 2
+        poly = [-2, 0, 0, 0, 1]
+        
+        alpha = NumberFieldElement.alpha(poly)
+        
+        # α² * α² = α⁴ = 2
+        alpha_sq = alpha * alpha
+        alpha_4 = alpha_sq * alpha_sq
+        assert alpha_4.coeffs == [Fraction(2), Fraction(0), Fraction(0), Fraction(0)]
+        
+        # α³ * α² = α⁵ = α * α⁴ = 2α
+        alpha_3 = alpha_sq * alpha
+        alpha_5 = alpha_3 * alpha_sq
+        assert alpha_5.coeffs == [Fraction(0), Fraction(2), Fraction(0), Fraction(0)]
+    
     def test_power_zero(self):
         """x^0 = 1."""
         poly = [-2, 0, 1]
