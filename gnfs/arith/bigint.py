@@ -69,7 +69,12 @@ def iroot(n: int, k: int) -> Tuple[int, bool]:
     if n < 0:
         if k % 2 == 0:
             raise ValueError("Even root of negative number")
-        return (-iroot(-n, k)[0], False)
+        # For negative n with odd k: root(-n)^k = -n, so root = -iroot(-n, k)
+        pos_root, pos_exact = iroot(-n, k)
+        # Check: (-pos_root)^k == n for odd k
+        # (-pos_root)^k = -pos_root^k (for odd k)
+        # This equals n iff pos_root^k == -n, which is what pos_exact tells us
+        return (-pos_root, pos_exact)
     
     if n == 0:
         return (0, True)
@@ -80,12 +85,25 @@ def iroot(n: int, k: int) -> Tuple[int, bool]:
         return (root, root * root == n)
     
     # Newton's method for k-th root
-    x = int(n ** (1 / k)) + 1
+    # Initial estimate using bit_length to avoid float overflow
+    # n^(1/k) ≈ 2^(bit_length(n)/k)
+    bits = n.bit_length()
+    x = 1 << ((bits + k - 1) // k)  # Ceiling of bits/k
+    if x == 0:
+        x = 1
+    
+    # Newton iteration: x_{n+1} = ((k-1)*x_n + n/x_n^{k-1}) / k
     while True:
-        x_new = ((k - 1) * x + n // (x ** (k - 1))) // k
+        # Compute x^{k-1} carefully to avoid overflow
+        x_pow = x ** (k - 1)
+        x_new = ((k - 1) * x + n // x_pow) // k
         if x_new >= x:
             break
         x = x_new
+    
+    # x might be slightly too large due to integer division, check x-1
+    while x > 0 and x ** k > n:
+        x -= 1
     
     return (x, x ** k == n)
 
