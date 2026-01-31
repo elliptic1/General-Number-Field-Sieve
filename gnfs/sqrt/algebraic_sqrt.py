@@ -80,26 +80,38 @@ class NumberFieldElement:
         return self._reduce(prod)
     
     def _reduce(self, coeffs: List[Fraction]) -> 'NumberFieldElement':
-        """Reduce a polynomial mod the defining polynomial."""
+        """Reduce a polynomial mod the defining polynomial.
+        
+        For f(x) = x^d + c_{d-1}*x^{d-1} + ... + c_0, we have:
+        α^d = -(c_{d-1}*α^{d-1} + ... + c_0) / leading_coeff
+        
+        To reduce α^{d+k}, we repeatedly apply: α^d -> reduction formula
+        """
         d = self.degree
         result = list(coeffs)
+        lead = Fraction(self.poly[-1])
         
-        # Leading coefficient of defining poly (assumed monic for simplicity)
-        # f(x) = x^d + c_{d-1}*x^{d-1} + ... + c_0
-        # So α^d = -c_{d-1}*α^{d-1} - ... - c_0
-        
-        while len(result) > d:
-            if result[-1] != 0:
-                # Multiply α^{len-1} coefficient by reduction rule
-                high_coeff = result.pop()
-                # α^d = -sum(poly[i] * α^i for i in range(d)) / poly[d]
-                lead = Fraction(self.poly[-1])
+        # Process from highest degree down to d
+        # For each term at degree >= d, replace α^d with the reduction
+        for deg in range(len(result) - 1, d - 1, -1):
+            if deg < len(result) and result[deg] != 0:
+                coeff = result[deg]
+                result[deg] = Fraction(0)
+                
+                # α^deg = α^{deg-d} * α^d
+                # α^d = -(c_0 + c_1*α + ... + c_{d-1}*α^{d-1}) / lead
+                # So α^deg contributes to positions (deg-d), (deg-d+1), ..., (deg-1)
+                shift = deg - d
                 for i in range(d):
-                    result[i] -= high_coeff * Fraction(self.poly[i]) / lead
-            else:
-                result.pop()
+                    target = i + shift
+                    if target < len(result):
+                        result[target] -= coeff * Fraction(self.poly[i]) / lead
+                    # If target >= len(result), those terms will be handled
+                    # in subsequent iterations (they're at degree < current deg)
         
-        # Pad to length d if needed
+        # Trim trailing zeros and pad to length d
+        while len(result) > d:
+            result.pop()
         while len(result) < d:
             result.append(Fraction(0))
         
