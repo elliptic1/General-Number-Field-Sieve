@@ -103,6 +103,37 @@ class TestIroot:
         root, exact = iroot(16, 4)
         assert exact
         assert root == 2
+    
+    def test_negative_exact_cube_root(self):
+        """Negative exact cube root preserves exactness (regression test)."""
+        root, exact = iroot(-27, 3)
+        assert root == -3, f"Expected -3, got {root}"
+        assert exact == True, f"Expected exact=True for iroot(-27, 3)"
+        assert root ** 3 == -27
+    
+    def test_negative_non_exact_cube_root(self):
+        """Negative non-exact cube root."""
+        root, exact = iroot(-28, 3)
+        assert root == -3
+        assert exact == False
+        assert root ** 3 > -28 > (root - 1) ** 3
+    
+    def test_large_integer_no_overflow(self):
+        """Large integers don't cause float overflow (regression test)."""
+        # 10^1000 would overflow float, but iroot should handle it
+        n = 10 ** 1000
+        root, exact = iroot(n, 3)
+        # Verify bounds: root^3 <= n < (root+1)^3
+        assert root ** 3 <= n
+        assert (root + 1) ** 3 > n
+    
+    def test_large_exact_power(self):
+        """Large exact power."""
+        base = 123456789
+        n = base ** 7
+        root, exact = iroot(n, 7)
+        assert root == base
+        assert exact == True
 
 
 class TestGCD:
