@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
-import { loadPyodideInstance, loadGNFSPackage, isPyodideLoaded } from '@/lib/pyodide'
+import { useState, useCallback, useEffect, useRef } from 'react'
 
 interface UsePyodideResult {
   isLoading: boolean
@@ -12,115 +11,92 @@ interface UsePyodideResult {
 }
 
 export function usePyodide(): UsePyodideResult {
-  const [isLoading, setIsLoading] = useState(false)
-  const [isReady, setIsReady] = useState(isPyodideLoaded())
+  const [isLoading, setIsLoading] = useState(true)
+  const [isReady, setIsReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [loadProgress, setLoadProgress] = useState('')
+  const [loadProgress, setLoadProgress] = useState('Initializing...')
+  
+  const workerRef = useRef<Worker | null>(null)
+  const pendingCallsRef = useRef<Map<number, {
+    resolve: (value: string) => void
+    reject: (error: Error) => void
+  }>>(new Map())
+  const nextIdRef = useRef(0)
 
   useEffect(() => {
-    if (isReady) return
+    // Create worker
+    const worker = new Worker('/pyodide.worker.js')
+    workerRef.current = worker
 
-    let mounted = true
+    // Handle messages from worker
+    worker.onmessage = (event) => {
+      const { id, type, output, error: workerError, message } = event.data
 
-    const init = async () => {
-      setIsLoading(true)
-      setLoadProgress('Loading Pyodide...')
-
-      try {
-        setLoadProgress('Downloading Pyodide runtime...')
-        const pyodide = await loadPyodideInstance()
-
-        if (!mounted) return
-
-        setLoadProgress('Loading GNFS package...')
-        await loadGNFSPackage(pyodide)
-
-        if (!mounted) return
-
-        setLoadProgress('')
+      if (type === 'status') {
+        setLoadProgress(message || '')
+      } else if (type === 'ready') {
         setIsReady(true)
-        setError(null)
-      } catch (err) {
-        if (!mounted) return
-        setError(err instanceof Error ? err.message : 'Failed to load Pyodide')
+        setIsLoading(false)
         setLoadProgress('')
-      } finally {
-        if (mounted) {
+        setError(null)
+      } else if (type === 'result') {
+        const pending = pendingCallsRef.current.get(id)
+        if (pending) {
+          pending.resolve(output)
+          pendingCallsRef.current.delete(id)
+        }
+      } else if (type === 'error') {
+        if (id !== undefined) {
+          const pending = pendingCallsRef.current.get(id)
+          if (pending) {
+            pending.reject(new Error(workerError))
+            pendingCallsRef.current.delete(id)
+          }
+        } else {
+          setError(workerError)
           setIsLoading(false)
         }
       }
     }
 
-    init()
+    worker.onerror = (err) => {
+      setError(err.message || 'Worker error')
+      setIsLoading(false)
+    }
+
+    // Initialize worker
+    worker.postMessage({ type: 'init' })
 
     return () => {
-      mounted = false
+      worker.terminate()
+      workerRef.current = null
     }
-  }, [isReady])
+  }, [])
 
   const runCode = useCallback(async (code: string): Promise<string> => {
-    if (!isReady) {
+    if (!isReady || !workerRef.current) {
       throw new Error('Pyodide is not ready')
     }
 
-    const pyodide = await loadPyodideInstance()
-    await loadGNFSPackage(pyodide)
-
-    // Capture stdout/stderr
-    const setupCode = `
-import sys
-from io import StringIO
-
-_captured_output = StringIO()
-_old_stdout = sys.stdout
-_old_stderr = sys.stderr
-sys.stdout = _captured_output
-sys.stderr = _captured_output
-`
-    
-    const getOutputCode = `
-sys.stdout = _old_stdout
-sys.stderr = _old_stderr
-_captured_output.getvalue()
-`
-
-    try {
-      // Set up output capture
-      await pyodide.runPythonAsync(setupCode)
+    return new Promise((resolve, reject) => {
+      const id = nextIdRef.current++
+      pendingCallsRef.current.set(id, { resolve, reject })
       
-      // Run the user's code - let errors bubble up naturally
-      let userError: string | null = null
-      try {
-        await pyodide.runPythonAsync(code)
-      } catch (err) {
-        userError = err instanceof Error ? err.message : String(err)
-      }
+      workerRef.current!.postMessage({
+        id,
+        type: 'run',
+        code,
+      })
       
-      // Get captured output
-      const output = await pyodide.runPythonAsync(getOutputCode)
-      const outputStr = String(output || '')
-      
-      // If there was an error, append it to the output
-      if (userError) {
-        return outputStr + '\n\nError: ' + userError
-      }
-      
-      return outputStr
-    } catch (err) {
-      // Restore stdout/stderr if setup failed
-      try {
-        await pyodide.runPythonAsync(`
-try:
-    sys.stdout = _old_stdout
-    sys.stderr = _old_stderr
-except:
-    pass
-`)
-      } catch {
-        // Ignore cleanup errors
-      }
-      throw new Error(err instanceof Error ? err.message : 'Python execution error')
-    }
+      // Timeout after 2 minutes
+      setTimeout(() => {
+        const pending = pendingCallsRef.current.get(id)
+        if (pending) {
+          pending.reject(new Error('Execution timeout (2 minutes)'))
+          pendingCallsRef.current.delete(id)
+        }
+      }, 120000)
+    })
   }, [isReady])
 
   return {

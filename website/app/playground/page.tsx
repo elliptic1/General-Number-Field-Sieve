@@ -238,13 +238,23 @@ else:
                 </p>
               </div>
 
-              <button
-                onClick={handleRun}
-                disabled={isRunning || !isReady || isLoading}
-                className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                {isLoading ? 'Loading Python...' : isRunning ? 'Factoring...' : 'Factor'}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleRun}
+                  disabled={isRunning || !isReady || isLoading}
+                  className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {isLoading ? 'Loading Python...' : isRunning ? 'Factoring...' : 'Factor'}
+                </button>
+                {isRunning && (
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="px-6 py-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
 
               <div className="pt-4 border-t border-border">
                 <p className="text-sm font-medium mb-2">For Larger Numbers</p>
@@ -272,7 +282,17 @@ else:
               </div>
             )}
 
-            {result ? (
+            {isRunning ? (
+              <div className="bg-[hsl(var(--bg))] rounded-lg p-12 text-center border border-border">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+                  <p className="text-muted-foreground">Running GNFS algorithm...</p>
+                  <p className="text-xs text-muted-foreground">
+                    This may take a moment. The computation runs in a background thread.
+                  </p>
+                </div>
+              </div>
+            ) : result ? (
               <div className="bg-[hsl(var(--bg))] rounded-lg p-6 font-mono text-xs whitespace-pre-wrap text-muted-foreground border border-border overflow-x-auto max-h-[600px] overflow-y-auto">
                 {result}
               </div>
