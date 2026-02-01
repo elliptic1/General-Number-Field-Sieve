@@ -77,78 +77,79 @@ if sp.isprime(n):
     print("RESULT: {} is prime".format(n))
     print("=" * 60)
     print("Time: {:.3f}s".format(elapsed))
-    raise SystemExit(0)
-
-# Step 1: Polynomial selection
-print()
-print("STEP 1: POLYNOMIAL SELECTION")
-print("-" * 60)
-selection = select_polynomial(n, degree=degree)
-print("Choose m = floor(n^(1/d)) = " + str(selection.m))
-print("Algebraic polynomial f(x) = " + str(selection.algebraic))
-print("Rational polynomial g(x) = " + str(selection.rational))
-print("These share root m = {} modulo n = {}".format(selection.m, n))
-
-# Step 2: Build factor base and sieve
-print()
-print("STEP 2: SIEVING FOR SMOOTH RELATIONS")
-print("-" * 60)
-primes = list(sp.primerange(2, bound + 1))
-print("Factor base (primes <= {}): {}".format(bound, primes))
-print("Searching for relations in interval [-{}, {}]...".format(interval, interval))
-
-relations = list(find_relations(selection, primes=primes, interval=interval))
-print("Found {} smooth relations".format(len(relations)))
-
-if relations:
-    print()
-    print("Relations (a, b) where a - {}*b factors over the base:".format(selection.m))
-    shown = min(6, len(relations))
-    for i, rel in enumerate(relations[:shown]):
-        val = rel.a - selection.m * rel.b
-        factors_str = " * ".join(
-            "{}^{}".format(p, e) if e > 1 else str(p) 
-            for p, e in rel.rational_factors.items()
-        ) if rel.rational_factors else "1"
-        print("  ({:4}, {:2}): {:4} - {}*{:2} = {:5} = {}".format(
-            rel.a, rel.b, rel.a, selection.m, rel.b, val, factors_str
-        ))
-    if len(relations) > shown:
-        print("  ... ({} more relations)".format(len(relations) - shown))
-
-# Step 3: Linear algebra
-print()
-print("STEP 3: LINEAR ALGEBRA OVER GF(2)")
-print("-" * 60)
-print("Building exponent matrix ({} relations x {} primes)...".format(len(relations), len(primes)))
-print("Finding vectors in nullspace (dependencies with even exponents)...")
-
-# Step 4: Extract factors
-print()
-print("STEP 4: SQUARE ROOT AND FACTOR EXTRACTION")
-print("-" * 60)
-
-factors = list(find_factors(n, relations, primes))
-elapsed = time.time() - start
-
-if factors and len(factors) >= 2:
-    p, q = factors[0], factors[1]
-    print("Combining relations to form congruence of squares...")
-    print("Found: x^2 = y^2 (mod n) where x != +/-y")
-    print("gcd(x - y, n) gives non-trivial factor!")
-    print()
-    print("=" * 60)
-    print("RESULT: {} = {} x {}".format(n, p, q))
-    print("=" * 60)
-    print("Verification: {} x {} = {}".format(p, q, p * q))
-    print("Time: {:.3f}s".format(elapsed))
 else:
-    print("No factors found with current parameters.")
+    print("{} is composite - proceeding with factorization...".format(n))
+    
+    # Step 1: Polynomial selection
     print()
-    print("Tips:")
-    print("  - Try a smaller semiprime (91, 143 work well)")
-    print("  - Increase smoothness bound")
-    print("  - Increase sieve interval")
+    print("STEP 1: POLYNOMIAL SELECTION")
+    print("-" * 60)
+    selection = select_polynomial(n, degree=degree)
+    print("Choose m = floor(n^(1/d)) = " + str(selection.m))
+    print("Algebraic polynomial f(x) = " + str(selection.algebraic))
+    print("Rational polynomial g(x) = " + str(selection.rational))
+    print("These share root m = {} modulo n = {}".format(selection.m, n))
+    
+    # Step 2: Build factor base and sieve
+    print()
+    print("STEP 2: SIEVING FOR SMOOTH RELATIONS")
+    print("-" * 60)
+    primes = list(sp.primerange(2, bound + 1))
+    print("Factor base (primes <= {}): {}".format(bound, primes))
+    print("Searching for relations in interval [-{}, {}]...".format(interval, interval))
+    
+    relations = list(find_relations(selection, primes=primes, interval=interval))
+    print("Found {} smooth relations".format(len(relations)))
+    
+    if relations:
+        print()
+        print("Relations (a, b) where a - {}*b factors over the base:".format(selection.m))
+        shown = min(6, len(relations))
+        for i, rel in enumerate(relations[:shown]):
+            val = rel.a - selection.m * rel.b
+            factors_str = " * ".join(
+                "{}^{}".format(p, e) if e > 1 else str(p) 
+                for p, e in rel.rational_factors.items()
+            ) if rel.rational_factors else "1"
+            print("  ({:4}, {:2}): {:4} - {}*{:2} = {:5} = {}".format(
+                rel.a, rel.b, rel.a, selection.m, rel.b, val, factors_str
+            ))
+        if len(relations) > shown:
+            print("  ... ({} more relations)".format(len(relations) - shown))
+    
+    # Step 3: Linear algebra
+    print()
+    print("STEP 3: LINEAR ALGEBRA OVER GF(2)")
+    print("-" * 60)
+    print("Building exponent matrix ({} relations x {} primes)...".format(len(relations), len(primes)))
+    print("Finding vectors in nullspace (dependencies with even exponents)...")
+    
+    # Step 4: Extract factors
+    print()
+    print("STEP 4: SQUARE ROOT AND FACTOR EXTRACTION")
+    print("-" * 60)
+    
+    factors = list(find_factors(n, relations, primes))
+    elapsed = time.time() - start
+    
+    if factors and len(factors) >= 2:
+        p, q = factors[0], factors[1]
+        print("Combining relations to form congruence of squares...")
+        print("Found: x^2 = y^2 (mod n) where x != +/-y")
+        print("gcd(x - y, n) gives non-trivial factor!")
+        print()
+        print("=" * 60)
+        print("RESULT: {} = {} x {}".format(n, p, q))
+        print("=" * 60)
+        print("Verification: {} x {} = {}".format(p, q, p * q))
+        print("Time: {:.3f}s".format(elapsed))
+    else:
+        print("No factors found with current parameters.")
+        print()
+        print("Tips:")
+        print("  - Try a smaller semiprime (91, 143 work well)")
+        print("  - Increase smoothness bound")
+        print("  - Increase sieve interval")
 `
 
     try {
