@@ -4,6 +4,9 @@ import { useState } from 'react'
 import { Slider } from '@/components/ui/slider'
 import { usePyodide } from '@/hooks/usePyodide'
 
+// Maximum number of digits allowed in playground (to prevent browser lockup)
+const MAX_DIGITS = 20
+
 export default function PlaygroundPage() {
   const [n, setN] = useState('91')
   const [degree, setDegree] = useState(1)
@@ -15,8 +18,33 @@ export default function PlaygroundPage() {
 
   const { isLoading, isReady, error: pyodideError, runCode, loadProgress } = usePyodide()
 
+  const validateInput = (): string | null => {
+    try {
+      const num = BigInt(n)
+      
+      if (num < BigInt(2)) {
+        return 'Number must be at least 2'
+      }
+      
+      if (n.length > MAX_DIGITS) {
+        return `Number too large for playground (max ${MAX_DIGITS} digits). Download the notebook to run locally.`
+      }
+    } catch (e) {
+      return 'Invalid number format'
+    }
+    
+    return null
+  }
+
   const handleRun = async () => {
     if (!isReady) return
+    
+    // Validate input
+    const validationError = validateInput()
+    if (validationError) {
+      setError(validationError)
+      return
+    }
     
     setIsRunning(true)
     setError(null)
@@ -36,6 +64,20 @@ start = time.time()
 
 print("GNFS Factorization of n = " + str(n))
 print("=" * 60)
+
+# Primality check (polynomial time using Miller-Rabin)
+print()
+print("STEP 0: PRIMALITY CHECK")
+print("-" * 60)
+if sp.isprime(n):
+    elapsed = time.time() - start
+    print("Number is PRIME - cannot be factored!")
+    print()
+    print("=" * 60)
+    print("RESULT: {} is prime".format(n))
+    print("=" * 60)
+    print("Time: {:.3f}s".format(elapsed))
+    raise SystemExit(0)
 
 # Step 1: Polynomial selection
 print()
@@ -167,7 +209,7 @@ else:
                   className="w-full px-4 py-3 bg-[hsl(var(--bg))] border border-border rounded-lg font-mono text-foreground focus:outline-none focus:border-primary transition-colors"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Small semiprimes work best (91, 143). Larger numbers need parameter tuning.
+                  Small semiprimes work best (91, 143). Max {MAX_DIGITS} digits in playground - download notebook for larger numbers.
                 </p>
               </div>
 
@@ -202,6 +244,20 @@ else:
               >
                 {isLoading ? 'Loading Python...' : isRunning ? 'Factoring...' : 'Factor'}
               </button>
+
+              <div className="pt-4 border-t border-border">
+                <p className="text-sm font-medium mb-2">For Larger Numbers</p>
+                <a
+                  href="/gnfs_notebook.ipynb"
+                  download
+                  className="block w-full px-4 py-3 bg-[hsl(var(--bg))] border border-border rounded-lg text-center hover:border-primary transition-colors text-sm"
+                >
+                  Download Jupyter Notebook
+                </a>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Run on your own hardware with no size limits
+                </p>
+              </div>
             </div>
           </div>
 
