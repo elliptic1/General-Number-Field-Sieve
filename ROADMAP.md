@@ -63,10 +63,22 @@
 
 **Why:** Current O(n³) Gaussian elimination won't scale. Block Lanczos is O(n²) with small constants.
 
-### 1.4 Square Root (Priority: MEDIUM)
-- [ ] Montgomery's square root algorithm
-- [ ] Handle algebraic square roots properly
-- [ ] Couveignes' algorithm for number field elements
+### 1.4 Square Root (Priority: MEDIUM) ✅ PARTIALLY COMPLETE
+- [x] Number field element arithmetic (Q(α) operations)
+- [x] Tonelli-Shanks algorithm for modular square roots
+- [x] Hensel lifting for prime power square roots
+- [x] Algebraic product computation (a - b*α) in number fields
+- [x] Norm computation for number field elements
+- [ ] Full Montgomery's square root algorithm (CRT combination)
+- [ ] Couveignes' algorithm for special cases
+
+**Implemented (2026):**
+- NumberFieldElement class with full arithmetic (+, -, *, pow) and automatic reduction
+- Tonelli-Shanks for computing sqrt mod p
+- Hensel lifting to compute sqrt mod p^k
+- AlgebraicSquareRoot helper class integrating with GNFS pipeline
+- Norm computation using resultants
+- 40 tests covering number field arithmetic, modular sqrt, factor extraction
 
 **Why:** Current implementation is correct but inefficient for large algebraic integers.
 
